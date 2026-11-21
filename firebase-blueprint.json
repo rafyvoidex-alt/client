@@ -1,0 +1,96 @@
+{
+  "entities": {
+    "Whiteboard": {
+      "title": "Whiteboard",
+      "description": "A collaborative whiteboard workspace document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string", "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 500 },
+        "createdBy": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "isPublic": { "type": "boolean" },
+        "template": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["title", "createdBy", "createdAt", "updatedAt"]
+    },
+    "BoardElement": {
+      "title": "BoardElement",
+      "description": "An interactive canvas element on a whiteboard",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "boardId": { "type": "string", "maxLength": 128 },
+        "type": { "type": "string", "enum": ["sticky", "rect", "circle", "diamond", "text", "drawing", "arrow", "frame", "badge"] },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number" },
+        "height": { "type": "number" },
+        "fill": { "type": "string", "maxLength": 40 },
+        "stroke": { "type": "string", "maxLength": 40 },
+        "strokeWidth": { "type": "number" },
+        "text": { "type": "string", "maxLength": 2000 },
+        "textColor": { "type": "string", "maxLength": 40 },
+        "fontSize": { "type": "number" },
+        "points": { "type": "array" },
+        "zIndex": { "type": "number" },
+        "updatedBy": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "boardId", "type", "x", "y", "updatedAt"]
+    },
+    "UserCursor": {
+      "title": "UserCursor",
+      "description": "Real-time cursor presence for a collaborator",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "boardId": { "type": "string", "maxLength": 128 },
+        "userName": { "type": "string", "maxLength": 60 },
+        "userColor": { "type": "string", "maxLength": 30 },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "lastSeen": { "type": "string" }
+      },
+      "required": ["userId", "boardId", "userName", "x", "y", "lastSeen"]
+    },
+    "ContestSubmission": {
+      "title": "ContestSubmission",
+      "description": "Submission record for the web design contest / client pitch",
+      "type": "object",
+      "properties": {
+        "entryId": { "type": "string", "maxLength": 50 },
+        "boardId": { "type": "string", "maxLength": 128 },
+        "applicantName": { "type": "string", "maxLength": 100 },
+        "applicantEmail": { "type": "string", "maxLength": 120 },
+        "approachTitle": { "type": "string", "maxLength": 150 },
+        "approachSummary": { "type": "string", "maxLength": 2500 },
+        "progress": { "type": "number" },
+        "status": { "type": "string", "enum": ["draft", "submitted", "reviewed"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["entryId", "boardId", "applicantName", "approachTitle", "approachSummary", "status", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/whiteboards/{boardId}": {
+      "schema": { "$ref": "#/entities/Whiteboard" },
+      "description": "Whiteboard workspaces"
+    },
+    "/whiteboards/{boardId}/elements/{elementId}": {
+      "schema": { "$ref": "#/entities/BoardElement" },
+      "description": "Canvas elements belonging to a specific whiteboard"
+    },
+    "/whiteboards/{boardId}/cursors/{userId}": {
+      "schema": { "$ref": "#/entities/UserCursor" },
+      "description": "Live real-time cursor presence per user"
+    },
+    "/submissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/ContestSubmission" },
+      "description": "Contest entries and client redesign approach submissions"
+    }
+  }
+}

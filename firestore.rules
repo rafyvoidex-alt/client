@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Whiteboard workspaces
+    match /whiteboards/{boardId} {
+      allow get: if isValidId(boardId);
+      allow list: if true;
+      allow create: if isValidId(boardId)
+        && incoming().title is string
+        && incoming().title.size() <= 100
+        && incoming().createdBy is string
+        && incoming().createdBy.size() <= 128;
+      allow update: if isValidId(boardId)
+        && incoming().title is string
+        && incoming().title.size() <= 100;
+      allow delete: if isValidId(boardId);
+
+      // Elements inside whiteboard
+      match /elements/{elementId} {
+        allow get: if isValidId(boardId) && isValidId(elementId);
+        allow list: if isValidId(boardId);
+        allow create: if isValidId(boardId) && isValidId(elementId)
+          && incoming().id is string
+          && incoming().id.size() <= 128
+          && incoming().boardId is string
+          && incoming().boardId.size() <= 128
+          && incoming().type is string
+          && incoming().type in ['sticky', 'rect', 'circle', 'diamond', 'text', 'drawing', 'arrow', 'frame', 'badge']
+          && incoming().x is number
+          && incoming().y is number
+          && (!('text' in incoming()) || (incoming().text is string && incoming().text.size() <= 2000))
+          && (!('points' in incoming()) || (incoming().points is list && incoming().points.size() <= 2500));
+        allow update: if isValidId(boardId) && isValidId(elementId)
+          && incoming().x is number
+          && incoming().y is number
+          && (!('text' in incoming()) || (incoming().text is string && incoming().text.size() <= 2000))
+          && (!('points' in incoming()) || (incoming().points is list && incoming().points.size() <= 2500));
+        allow delete: if isValidId(boardId) && isValidId(elementId);
+      }
+
+      // Real-time live cursors
+      match /cursors/{userId} {
+        allow get: if isValidId(boardId) && isValidId(userId);
+        allow list: if isValidId(boardId);
+        allow write: if isValidId(boardId) && isValidId(userId)
+          && incoming().userName is string
+          && incoming().userName.size() <= 60
+          && incoming().x is number
+          && incoming().y is number;
+      }
+    }
+
+    // Contest & Client Redesign Submissions
+    match /submissions/{submissionId} {
+      allow get: if isValidId(submissionId);
+      allow list: if true;
+      allow create: if isValidId(submissionId)
+        && incoming().entryId is string
+        && incoming().entryId.size() <= 50
+        && incoming().applicantName is string
+        && incoming().applicantName.size() <= 100
+        && incoming().approachTitle is string
+        && incoming().approachTitle.size() <= 150
+        && incoming().approachSummary is string
+        && incoming().approachSummary.size() <= 2500
+        && incoming().status in ['draft', 'submitted', 'reviewed'];
+      allow update: if isValidId(submissionId)
+        && incoming().entryId == existing().entryId
+        && incoming().approachTitle is string
+        && incoming().approachTitle.size() <= 150
+        && incoming().approachSummary is string
+        && incoming().approachSummary.size() <= 2500;
+      allow delete: if false;
+    }
+  }
+}

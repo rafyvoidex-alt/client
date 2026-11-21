@@ -1,0 +1,6 @@
+{
+  "name": "WhiteboardCraft - Collaborative Design Studio",
+  "description": "Real-time collaborative whiteboard for website design, wireframing, client reviews, and interactive ideation powered by React and Firebase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
